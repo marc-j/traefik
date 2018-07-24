@@ -247,7 +247,11 @@ func (p *Provider) loadIngresses(k8sClient Client) (*types.Configuration, error)
 				if len(r.Host) > 0 {
 					rule := "Host:" + r.Host
 
-					if strings.Contains(r.Host, "*") {
+					hostsAnnotation, ok := i.Annotations["traefik.frontend.routes." + r.Host]
+					if ok && len(hostsAnnotation) > 0 {
+						log.Debugf("Ingress rules hosts: %s (%s)", "traefik.frontend.routes." + r.Host, hostsAnnotation)
+						rule = "Host: " + hostsAnnotation
+					} else if strings.Contains(r.Host, "*") {
 						rule = "HostRegexp:" + strings.Replace(r.Host, "*", "{subdomain:[A-Za-z0-9-_]+}", 1)
 					}
 
